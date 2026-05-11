@@ -8,28 +8,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import com.example.elsewhere.AuthRepository
 
 @Composable
 fun LoginScreen(
     onGoRegister: () -> Unit,
-    onLogin: () -> Unit
+    onLogin: () -> Unit,
+    onGoogleLogin: () -> Unit
 ) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
+                    listOf(
                         Color(0xFFFFFAFB),
                         Color(0xFFF6F1FF),
                         Color(0xFFFFFDFC)
@@ -38,25 +44,19 @@ fun LoginScreen(
             )
     ) {
 
-        // ambient glow blobs (no flowers, more modern)
+        // soft glow background
         Box(
             modifier = Modifier
                 .size(260.dp)
-                .offset(x = 160.dp, y = (-40).dp)
-                .background(
-                    Color(0xFFD8A7B1).copy(alpha = 0.20f),
-                    CircleShape
-                )
+                .offset(x = 160.dp, y = (-60).dp)
+                .background(Color(0xFFD8A7B1).copy(alpha = 0.18f), CircleShape)
         )
 
         Box(
             modifier = Modifier
                 .size(220.dp)
                 .offset(x = (-80).dp, y = 600.dp)
-                .background(
-                    Color(0xFFC7C0E8).copy(alpha = 0.20f),
-                    CircleShape
-                )
+                .background(Color(0xFFC7C0E8).copy(alpha = 0.18f), CircleShape)
         )
 
         Column(
@@ -66,7 +66,6 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
-            // ✨ BRAND TITLE (UPGRADED "ELSEWHERE")
             Text(
                 text = "elsewhere",
                 fontSize = 44.sp,
@@ -83,25 +82,20 @@ fun LoginScreen(
                 fontSize = 14.sp
             )
 
-            Spacer(modifier = Modifier.height(38.dp))
+            Spacer(modifier = Modifier.height(34.dp))
 
-            // ✨ GLASS CARD (NO REAL BLUR, BUT DEPTH EFFECT)
+            // CARD
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(
-                        elevation = 18.dp,
-                        shape = RoundedCornerShape(32.dp),
-                        ambientColor = Color(0xFFD8A7B1).copy(alpha = 0.15f)
-                    )
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(
+                            listOf(
                                 Color.White.copy(alpha = 0.55f),
                                 Color.White.copy(alpha = 0.35f)
                             )
                         ),
-                        shape = RoundedCornerShape(32.dp)
+                        shape = RoundedCornerShape(28.dp)
                     )
                     .padding(22.dp)
             ) {
@@ -110,54 +104,110 @@ fun LoginScreen(
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            errorText = ""
+                        },
                         label = { Text("email") },
                         singleLine = true,
-                        shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD8A7B1),
-                            unfocusedBorderColor = Color(0xFFCFC7D8),
-                            focusedContainerColor = Color.White.copy(alpha = 0.6f),
-                            unfocusedContainerColor = Color.White.copy(alpha = 0.4f)
+                            unfocusedBorderColor = Color(0xFFCFC7D8)
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            errorText = ""
+                        },
                         label = { Text("password") },
                         singleLine = true,
-                        shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD8A7B1),
-                            unfocusedBorderColor = Color(0xFFCFC7D8),
-                            focusedContainerColor = Color.White.copy(alpha = 0.6f),
-                            unfocusedContainerColor = Color.White.copy(alpha = 0.4f)
+                            unfocusedBorderColor = Color(0xFFCFC7D8)
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(22.dp))
+                    if (errorText.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = errorText,
+                            color = Color.Red,
+                            fontSize = 12.sp
+                        )
+                    }
 
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // LOGIN BUTTON
                     Button(
-                        onClick = onLogin,
+                        onClick = {
+                            scope.launch {
+                                loading = true
+
+                                val result = AuthRepository.signIn(email, password)
+
+                                loading = false
+
+                                if (result.isSuccess) {
+                                    onLogin()
+                                } else {
+                                    errorText = "Login failed. Check details."
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(20.dp),
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFD8A7B1)
                         )
                     ) {
-                        Text("login")
+                        if (loading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        } else {
+                            Text("login")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 🔵 GOOGLE BUTTON (CLASSIC STYLE)
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                AuthRepository.signInWithGoogle()
+                                onGoogleLogin()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = ButtonDefaults.buttonElevation(2.dp)
+                    ) {
+                        Text(" Continue with Google", color = Color(0xFF3F363A))
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             TextButton(
                 onClick = onGoRegister,

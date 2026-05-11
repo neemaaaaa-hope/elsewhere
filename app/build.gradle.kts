@@ -45,7 +45,6 @@ android {
 dependencies {
 
     // ─────────────────────────────
-    // SUPABASE (CLEAN SETUP)
     // ─────────────────────────────
     implementation(platform(libs.supabase.bom))
 
@@ -53,21 +52,25 @@ dependencies {
     implementation(libs.supabase.storage)
     implementation(libs.supabase.auth)
 
-    // If auth still fails, use this instead of auth:
-    // implementation("io.github.jan-tennert.supabase:gotrue-kt")
+
 
     // ─────────────────────────────
-    // LOTTIE
+
     // ─────────────────────────────
     implementation(libs.lottie.compose)
 
     // ─────────────────────────────
-    // KTOR (networking for Supabase)
+
     // ─────────────────────────────
     implementation(libs.ktor.android)
 
     // ─────────────────────────────
-    // ANDROID CORE
+
+    // ─────────────────────────────
+    implementation(libs.play.services.location)
+
+    // ─────────────────────────────
+
     // ─────────────────────────────
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -75,16 +78,17 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     // ─────────────────────────────
-    // COMPOSE
+
     // ─────────────────────────────
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
 
     // ─────────────────────────────
-    // TESTING
+
     // ─────────────────────────────
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

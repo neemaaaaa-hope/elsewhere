@@ -14,12 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.rememberCoroutineScope
+import com.example.elsewhere.AuthRepository
 import kotlinx.coroutines.launch
-
-import com.example.elsewhere.data.SupabaseClientInstance
-//import io.github.jan.supabase.gotrue.auth
-//import io.github.jan.supabase.gotrue.providers.builtin.Email
 
 @Composable
 fun RegisterScreen(
@@ -29,8 +25,8 @@ fun RegisterScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
     var errorText by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
@@ -39,7 +35,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
+                    listOf(
                         Color(0xFFFFFAFB),
                         Color(0xFFF6F1FF),
                         Color(0xFFFFFDFC)
@@ -48,25 +44,19 @@ fun RegisterScreen(
             )
     ) {
 
-        // ambient glows
+        // soft glow backgrounds (consistent with LoginScreen)
         Box(
             modifier = Modifier
                 .size(260.dp)
-                .offset(x = 160.dp, y = (-50).dp)
-                .background(
-                    Color(0xFFC7C0E8).copy(alpha = 0.22f),
-                    CircleShape
-                )
+                .offset(x = (-80).dp, y = (-60).dp)
+                .background(Color(0xFFC7C0E8).copy(alpha = 0.18f), CircleShape)
         )
 
         Box(
             modifier = Modifier
-                .size(240.dp)
-                .offset(x = (-100).dp, y = 620.dp)
-                .background(
-                    Color(0xFFD8A7B1).copy(alpha = 0.18f),
-                    CircleShape
-                )
+                .size(220.dp)
+                .offset(x = 180.dp, y = 600.dp)
+                .background(Color(0xFFD8A7B1).copy(alpha = 0.18f), CircleShape)
         )
 
         Column(
@@ -77,40 +67,47 @@ fun RegisterScreen(
         ) {
 
             Text(
-                text = "create account",
-                fontSize = 34.sp,
+                text = "elsewhere",
+                fontSize = 44.sp,
                 fontWeight = FontWeight.ExtraLight,
-                letterSpacing = 2.sp,
+                letterSpacing = 4.sp,
                 color = Color(0xFF3F363A)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "join elsewhere and start exploring",
-                fontSize = 14.sp,
-                color = Color(0xFF8A8588)
+                text = "begin your journey to calm",
+                color = Color(0xFF8A8588),
+                fontSize = 14.sp
             )
 
-            Spacer(modifier = Modifier.height(38.dp))
+            Spacer(modifier = Modifier.height(34.dp))
 
-            // glass card
+            // CARD
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(
+                            listOf(
                                 Color.White.copy(alpha = 0.55f),
                                 Color.White.copy(alpha = 0.35f)
                             )
                         ),
-                        shape = RoundedCornerShape(32.dp)
+                        shape = RoundedCornerShape(28.dp)
                     )
                     .padding(22.dp)
             ) {
 
                 Column {
+                    Text(
+                        text = "create account",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Light,
+                        color = Color(0xFF3F363A),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
                     OutlinedTextField(
                         value = email,
@@ -120,17 +117,15 @@ fun RegisterScreen(
                         },
                         label = { Text("email") },
                         singleLine = true,
-                        shape = RoundedCornerShape(18.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD8A7B1),
-                            unfocusedBorderColor = Color(0xFFCFC7D8),
-                            focusedContainerColor = Color.White.copy(alpha = 0.6f),
-                            unfocusedContainerColor = Color.White.copy(alpha = 0.4f)
+                            unfocusedBorderColor = Color(0xFFCFC7D8)
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = password,
@@ -139,22 +134,18 @@ fun RegisterScreen(
                             errorText = ""
                         },
                         label = { Text("password") },
-                        visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
-                        shape = RoundedCornerShape(18.dp),
+                        visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD8A7B1),
-                            unfocusedBorderColor = Color(0xFFCFC7D8),
-                            focusedContainerColor = Color.White.copy(alpha = 0.6f),
-                            unfocusedContainerColor = Color.White.copy(alpha = 0.4f)
+                            unfocusedBorderColor = Color(0xFFCFC7D8)
                         )
                     )
 
                     if (errorText.isNotEmpty()) {
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = errorText,
                             color = Color.Red,
@@ -162,65 +153,50 @@ fun RegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
+                    // REGISTER BUTTON
                     Button(
                         onClick = {
-
-                            if (email.isBlank() || password.isBlank()) {
-                                errorText = "please fill in all fields"
-                                return@Button
-                            }
-
-                            loading = true
-
                             scope.launch {
+                                loading = true
+                                val result = AuthRepository.signUp(email, password)
+                                loading = false
 
-                                try {
-
-                                    val client = SupabaseClientInstance.client
-                                    loading = false
+                                if (result.isSuccess) {
                                     onRegisterSuccess()
-
-                                } catch (e: Exception) {
-
-                                    loading = false
-                                    errorText = e.message ?: "something went wrong"
+                                } else {
+                                    errorText = "failed to create account"
                                 }
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(20.dp),
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFD8A7B1)
                         )
                     ) {
-
                         if (loading) {
-
                             CircularProgressIndicator(
                                 color = Color.White,
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-
                         } else {
-
                             Text("sign up")
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             TextButton(
                 onClick = onGoLogin,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-
                 Text(
                     text = "already have an account? login",
                     color = Color(0xFF7F7880)
